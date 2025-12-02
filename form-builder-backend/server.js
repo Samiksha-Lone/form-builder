@@ -298,12 +298,11 @@ app.post('/api/forms/:id/submit', async (req, res) => {
 
     const saved = await responseModel.create({
       formId: form._id,
-      airtableRecordId: null,   // no Airtable id
+      airtableRecordId: null,  
       answers,
       createdAt: new Date(),
     });
 
-    // 7) Return success
     return res.status(201).json({
       success: true,
       responseId: saved._id,

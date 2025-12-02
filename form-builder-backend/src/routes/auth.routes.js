@@ -71,9 +71,6 @@ router.get('/airtable/callback', async (req, res) => {
     { upsert: true, new: true }
   );
 
-  // res.redirect('http://localhost:5173/dashboard');
-
-  // after saving/locating user:
 const token = jwt.sign(
   { userId: airtableUserId },
   process.env.JWT_SECRET,
@@ -91,16 +88,5 @@ router.post('/login', async (req, res) => {
   res.json({ token });
 });
 
-// router.get('/me', auth, async (req, res) => {
-//   const user = await User.findOne({ airtableUserId: req.userId });
-//   if (!user) return res.json({ loggedIn: false });
-
-//   res.json({
-//     loggedIn: true,
-//     airtableUserId: user.airtableUserId,
-//     name: user.name,
-//     email: user.email,
-//   });
-// });
 
 module.exports = router;

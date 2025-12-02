@@ -20,7 +20,6 @@ router.get('/me', async (req, res) => {
   }
 });
 
-// GET /api/bases
 router.get('/bases', async (req, res) => {
   try {
     const user = await User.findOne();
@@ -41,7 +40,6 @@ router.get('/bases', async (req, res) => {
   }
 });
 
-// GET /api/tables
 router.get('/tables', async (req, res) => {
   try {
     const user = await User.findOne();
@@ -63,7 +61,6 @@ router.get('/tables', async (req, res) => {
   }
 });
 
-// GET /api/fields  (static)
 router.get('/fields', (req, res) => {
   const fields = [
     { id: 'name', label: 'Name', type: 'shortText', required: true },

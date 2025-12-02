@@ -1,4 +1,4 @@
-// routes/form.routes.js
+
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middleware');
@@ -67,26 +67,24 @@ router.get('/:id', async (req, res) => {
 
 router.post('/:id/submit', auth, async (req, res) => {
   try {
-    // 1) Load form definition
+   
     const form = await Form.findById(req.params.id);
     if (!form) {
       return res.status(404).json({ error: 'Form not found' });
     }
 
-    // 2) Get user token
+
     const user = await User.findOne({ airtableUserId: req.userId });
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
     const token = user.accessToken;
 
-    // 3) Read answers
     const { answers } = req.body;
     if (!answers || typeof answers !== 'object') {
       return res.status(400).json({ error: 'answers object is required' });
     }
 
-    // 4) Validate required fields
     const missing = [];
     for (const q of form.questions) {
       if (q.required && (answers[q.fieldId] == null || answers[q.fieldId] === '')) {
@@ -97,7 +95,6 @@ router.post('/:id/submit', auth, async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields', missing });
     }
 
-    // 5) Map to Airtable fields
     const airtableFields = {};
     form.questions.forEach(q => {
       if (answers[q.fieldId] !== undefined && answers[q.fieldId] !== null) {
@@ -105,7 +102,6 @@ router.post('/:id/submit', auth, async (req, res) => {
       }
     });
 
-    // 6) Save to Airtable
     const airtableResponse = await fetch(
       `https://api.airtable.com/v0/${form.airtableBaseId}/${form.airtableTableName}`,
       {
@@ -125,7 +121,6 @@ router.post('/:id/submit', auth, async (req, res) => {
 
     const airtableRecord = await airtableResponse.json();
 
-    // 7) Save to MongoDB
     const saved = await Response.create({
       formId: form._id,
       airtableRecordId: airtableRecord.id,

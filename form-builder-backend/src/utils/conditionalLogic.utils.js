@@ -19,13 +19,11 @@ function shouldShowQuestion(rules, answers) {
 }
 
 function validateForm(form, answers) {
-  // Required fields
   const missing = form.questions.filter(q => 
     q.required && !answers[q.fieldId]
   );
   if (missing.length) throw new Error(`Missing: ${missing.map(q => q.label).join(', ')}`);
-  
-  // Conditional logic
+
   form.questions.forEach(q => {
     if (q.conditionalRules) {
       const shouldShow = shouldShowQuestion(q.conditionalRules, answers);
