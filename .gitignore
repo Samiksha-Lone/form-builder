@@ -1,6 +1,33 @@
-node_modules
+# Node modules
+node_modules/
+**/node_modules/
+
+# Env files
 .env
-dist
-.vscode
-.DS_Store
+*.env
+
+# Build outputs
+dist/
+build/
+.cache/
+.cache-loader/
+coverage/
+
+# Logs
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+*.iml
+
+# Misc
+.git-credentials
