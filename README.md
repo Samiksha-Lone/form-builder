@@ -88,14 +88,12 @@ form-builder/
 
 Create a `.env` file inside **`form-builder-backend`**:
 
-AIRTABLE_CLIENT_ID=4c6f6195-6afd-4445-8404-e881614ae230
-AIRTABLE_CLIENT_SECRET=a2f2d3e2d765feb295eb142c18dd1d29cc79b8b382d18c4b8431f032702a2be5
-REDIRECT_URL=http://localhost:5000/auth/airtable/callback
-NAME=Form Builder
-MONGODB_URI=mongodb://localhost:27017/form_builder
-JWT_SECRET=0FddSyPQHQR2LWuYYgIzVorLx7EYBHtIRrJ7GIQ6fOaaBiHpW4BFJdttuepOkPrT
-AIRTABLE_BASE_ID=appnubAoLb07wiTzh
-AIRTABLE_TABLE_NAME=Users
+AIRTABLE_CLIENT_ID=<airtable_oauth_client_id>
+AIRTABLE_CLIENT_SECRET=<airtable_oauth_client_secret>
+MONGODB_URI=<your_mongodb_connection_string>
+JWT_SECRET=<any_long_random_string>
+AIRTABLE_BASE_ID=<your_airtable_base_id>
+AIRTABLE_TABLE_NAME=<your_airtable_table_name>
 
 
 OAuth redirect URI used in both Airtable settings and `server.js`:
