@@ -1,4 +1,3 @@
-// routes/auth.routes.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user.model');
@@ -58,12 +57,14 @@ router.get('/airtable/callback', async (req, res) => {
   const tokenJson = await tokenRes.json();
   if (tokenJson.error) return res.send('Token error: ' + JSON.stringify(tokenJson));
 
-  const airtableUserId = 'airtable-user-1';
-  await User.findOneAndUpdate(
+  const airtableUserId = tokenJson.user_id;
+  
+  const user = await User.findOneAndUpdate(
     { airtableUserId },
     {
       airtableUserId,
       name: 'Airtable User',
+      email: `user+${airtableUserId}@formbuilder.internal`,
       accessToken: tokenJson.access_token,
       refreshToken: tokenJson.refresh_token,
       loginTime: new Date(),
@@ -71,12 +72,59 @@ router.get('/airtable/callback', async (req, res) => {
     { upsert: true, new: true }
   );
 
-const token = jwt.sign(
-  { userId: airtableUserId },
-  process.env.JWT_SECRET,
-  { expiresIn: '7d' }
+  const token = jwt.sign(
+    { userId: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+  res.redirect(`http://localhost:5173/dashboard?token=${token}`);
+});
+
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  'http://localhost:5000/auth/google/callback'
 );
-res.redirect(`http://localhost:5173/dashboard?token=${token}`);
+
+router.get('/google', (req, res) => {
+  const url = googleClient.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
+  });
+  res.redirect(url);
+});
+
+router.get('/google/callback', async (req, res) => {
+  const { code } = req.query;
+  try {
+    const { tokens } = await googleClient.getToken(code);
+    googleClient.setCredentials(tokens);
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    const user = await User.findOneAndUpdate(
+      { email: payload.email },
+      {
+        googleId: payload.sub,
+        name: payload.name,
+        email: payload.email,
+        loginTime: new Date()
+      },
+      { upsert: true, new: true }
+    );
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.redirect(`http://localhost:5173/dashboard?token=${token}`);
+  } catch (err) {
+    res.redirect('http://localhost:5173/login?error=auth_failed');
+  }
 });
 
 router.post('/login', async (req, res) => {
@@ -84,7 +132,7 @@ router.post('/login', async (req, res) => {
   const user = await User.findOne({ airtableUserId });
   if (!user) return res.status(401).json({ error: 'User not found' });
   
-  const token = jwt.sign({ userId: user.airtableUserId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.json({ token });
 });
 

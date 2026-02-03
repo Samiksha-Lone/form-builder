@@ -3,9 +3,11 @@ const router = express.Router();
 const fetch = require('node-fetch');
 const User = require('../models/user.model');
 
-router.get('/me', async (req, res) => {
+const auth = require('../middlewares/auth.middleware');
+
+router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findOne();
+    const user = await User.findById(req.userId);
     if (!user) return res.json({ loggedIn: false });
 
     res.json({
@@ -15,48 +17,43 @@ router.get('/me', async (req, res) => {
       email: user.email,
     });
   } catch (e) {
-    console.error('GET /api/me error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-router.get('/bases', async (req, res) => {
+router.get('/bases', auth, async (req, res) => {
   try {
-    const user = await User.findOne();
+    const user = await User.findById(req.userId);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
-
-    const token = user.accessToken;
+    if (!user.accessToken) return res.status(400).json({ error: 'Airtable not connected' });
 
     const resp = await fetch('https://api.airtable.com/v0/meta/bases', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${user.accessToken}` },
     });
     const data = await resp.json();
 
     if (!resp.ok) return res.status(resp.status).json(data);
     res.json({ bases: data.bases || [] });
   } catch (e) {
-    console.error('GET /api/bases error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-router.get('/tables', async (req, res) => {
+router.get('/tables', auth, async (req, res) => {
   try {
-    const user = await User.findOne();
+    const user = await User.findById(req.userId);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
-
-    const token = user.accessToken;
+    if (!user.accessToken) return res.status(400).json({ error: 'Airtable not connected' });
 
     const resp = await fetch(
       `https://api.airtable.com/v0/meta/bases/${process.env.AIRTABLE_BASE_ID}/tables`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${user.accessToken}` } }
     );
     const data = await resp.json();
 
     if (!resp.ok) return res.status(resp.status).json(data);
     res.json({ tables: data.tables || [] });
   } catch (e) {
-    console.error('GET /api/tables error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });

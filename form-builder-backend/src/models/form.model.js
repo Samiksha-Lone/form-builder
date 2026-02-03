@@ -22,13 +22,14 @@ const questionSchema = new mongoose.Schema({
   label: String,      
   type: String,       
   required: Boolean,
+  options: [String],
   conditionalRules: conditionalRulesSchema,
 });
 
 const formSchema = new mongoose.Schema({
-  ownerUserId: { type: String, required: true },    
-  airtableBaseId: { type: String, required: true },
-  airtableTableName: { type: String, required: true },
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },    
+  airtableBaseId: { type: String },
+  airtableTableName: { type: String },
   title: { type: String, required: true },
   questions: [questionSchema],
   createdAt: { type: Date, default: Date.now },

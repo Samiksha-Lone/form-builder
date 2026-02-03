@@ -1,155 +1,67 @@
-# Form Builder – MERN + Airtable
+# FormBuilder
 
-This is a full‑stack form builder application built for a tech hiring task. It uses **Airtable OAuth** for login, **React (Vite)** for the UI, **Node/Express** for the API, and **MongoDB** for persistence.
-
-> In the final submitted version, form submissions are saved to **MongoDB**.  
-> The Airtable record‑creation call is commented/stubbed in the backend due to OAuth/permission limits, but the mapping logic is present and can be re‑enabled.
-
----
-
-## Tech Stack
-
-- **Frontend:** React (Vite), React Router, Tailwind CSS  
-- **Backend:** Node.js, Express  
-- **Database:** MongoDB (Mongoose)  
-- **External API:** Airtable OAuth 2.0 + REST API  
-
----
+A MERN stack application for creating dynamic forms with multi-provider OAuth (Airtable & Google) and real-time synchronization with Airtable.
 
 ## Features
 
-- **Airtable OAuth Login**
-  - “Login with Airtable” redirects to Airtable’s OAuth consent page.
-  - Backend exchanges the auth code for access/refresh tokens.
-  - User + tokens are stored in MongoDB.
+- **Authentication**: Native Airtable OAuth 2.0 (PKCE) and Google OAuth 2.0.
+- **Form Builder**: Drag-and-drop-style interface for creating forms with various field types (Short Text, Long Text, Single Select).
+- **Conditional Logic**: Visibility rules (AND/OR) to show/hide fields based on user input.
+- **Data Sync**: Responses are stored in MongoDB and optionally synced to Airtable bases in real-time.
+- **Responsive UI**: Built with React, Tailwind CSS, and Framer Motion.
 
-- **Dashboard**
-  - Shows authenticated state.
-  - Lists all saved forms from MongoDB.
-  - Button to create a new form.
+## Tech Stack
 
-- **Form Builder**
-  - Predefined fields: **Name, Email, Role, GitHub URL, About**.
-  - Enable/disable fields and mark as required.
-  - Saves form structure as a `Form` document in MongoDB.
+- **Frontend**: React 19, Vite, Tailwind CSS, Framer Motion
+- **Backend**: Node.js, Express
+- **Database**: MongoDB (Mongoose)
+- **Integrations**: Airtable API, Google OAuth
 
-- **Form Submission**
-  - Public form URL: `/form/:formId`.
-  - Validates required fields on client and server.
-  - On submit, stores the response as a `Response` document in MongoDB.
+## Installation
 
-- **View Responses**
-  - URL: `/forms/:formId/responses`.
-  - Lists responses for a form with timestamp and selected answers.
+### 1. Backend Setup
 
----
+Navigate to `form-builder-backend` and create a `.env` file:
+
+```env
+# Airtable
+AIRTABLE_CLIENT_ID=
+AIRTABLE_CLIENT_SECRET=
+AIRTABLE_BASE_ID=
+AIRTABLE_TABLE_NAME=
+
+# Google OAuth
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Database & Security
+MONGODB_URI=
+JWT_SECRET=
+PORT=5000
+```
+
+Install dependencies and start the server:
+```bash
+npm install
+node server.js
+```
+
+### 2. Frontend Setup
+
+Navigate to `form-builder-frontend`, install dependencies and start the development server:
+
+```bash
+npm install
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`.
 
 ## Project Structure
 
-form-builder/
-  form-builder-backend/
-    server.js
-    package.json
-    .env                 # NOT committed, local only
-    src/
-      models/
-        user.model.js
-        form.model.js
-        response.model.js
-      middlewares/
-        auth.middleware.js
-      routes/
-        auth.routes.js
-        form.routes.js
-        airtable.routes.js
-        response.routes.js
-  form-builder-frontend/
-    package.json
-    index.html
-    vite.config.js
-    src/
-      main.jsx
-      App.jsx
-      pages/
-        Login.jsx
-        Dashboard.jsx
-        FormResponses.jsx
-      components/
-        FormViewer.jsx
-      utils/
-        api.js
-      styles/
-        index.css
+- `form-builder-backend/`: Express.js server, OAuth handling, and API routes.
+- `form-builder-frontend/`: React frontend with form building and viewing capabilities.
 
+## License
 
----
-
-## Backend Setup
-
-Create a `.env` file inside **`form-builder-backend`**:
-
-AIRTABLE_CLIENT_ID=<airtable_oauth_client_id>
-AIRTABLE_CLIENT_SECRET=<airtable_oauth_client_secret>
-MONGODB_URI=<your_mongodb_connection_string>
-JWT_SECRET=<any_long_random_string>
-AIRTABLE_BASE_ID=<your_airtable_base_id>
-AIRTABLE_TABLE_NAME=<your_airtable_table_name>
-
-
-OAuth redirect URI used in both Airtable settings and `server.js`:
-
-http://localhost:5000/auth/airtable/callback
-
-
-> In the final `/api/forms/:id/submit` handler, the call to `https://api.airtable.com/v0/...` is commented/removed, and only MongoDB storage is performed. The payload that would be sent to Airtable is logged so it can be wired back easily later.
-
-### Run Backend
-
-cd form-builder-backend
-npm install
-node server.js
-
-Server: http://localhost:5000
-
-
----
-
-## Frontend Setup
-
-The frontend talks to the backend at `http://localhost:5000`.
-
-### Run Frontend
-
-cd form-builder-frontend
-npm install
-npm run dev
-
-Vite dev server: http://localhost:5173
-
-
----
-
-## Usage Flow
-
-1. Open `http://localhost:5173/login`.  
-2. Click **“Login with Airtable”** and approve the integration.  
-3. You are redirected to the **Dashboard**.  
-4. Click **“Create form”**, configure fields (enable/disable, required), and save.  
-5. In **Your forms**, click **“Open form”** to navigate to `/form/:formId`.  
-6. Fill out the form and submit.  
-7. Go back to the Dashboard and click **“Responses”** for that form  
-   (`/forms/:formId/responses`) to see the submissions stored in MongoDB.
-
----
-
-## Demo
-Repository: <https://github.com/Samiksha-Lone/form-builder>
-
-
----
-
-## Notes & Trade‑offs
-
-- Airtable OAuth flow and token storage are implemented end‑to‑end.  
-- Due to time and permission constraints, production writes to Airtable are disabled; MongoDB is the source of truth for responses in this version.  
-- Error and loading states are handled on the Login, Dashboard, Form Viewer, and Responses screens to keep the UX robust even when APIs fail.
+MIT

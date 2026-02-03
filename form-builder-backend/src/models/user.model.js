@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  airtableUserId: {
-    type: String,
-    required: true,
-    unique: true
-  },
   name: {
     type: String,
     required: true
@@ -14,14 +9,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true    
-  }, 
-  accessToken: {
+  },
+  googleId: {
     type: String,
-    required: true
+    unique: true,
+    sparse: true
+  },
+  airtableUserId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  accessToken: {
+    type: String
   },
   refreshToken: {
-    type: String,
-    required: true
+    type: String
   },
   loginTime: {
     type: Date,

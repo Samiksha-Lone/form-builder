@@ -6,45 +6,52 @@ const Form = require('../models/form.model');
 const User = require('../models/user.model');
 const Response = require('../models/response.model');
 const fetch = require('node-fetch');
+const rateLimit = require('express-rate-limit');
+const { validateForm, validateSubmission } = require('../middlewares/validation.middleware');
+
+const submissionLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, 
+  max: 10, 
+  message: { error: 'Submission limit reached. Please try again in an hour.' }
+});
 
 router.get('/', auth, async (req, res) => {
   try {
-    const forms = await Form.find().sort({ createdAt: -1 });
-    res.json({
-      forms: forms.map((f) => ({
+    const forms = await Form.find({ ownerId: req.userId }).sort({ createdAt: -1 });
+    
+    const formsWithCounts = await Promise.all(forms.map(async (f) => {
+      const count = await Response.countDocuments({ formId: f._id });
+      return {
         id: f._id,
         title: f.title,
         createdAt: f.createdAt,
-      })),
-    });
+        responseCount: count
+      };
+    }));
+
+    res.json({ forms: formsWithCounts });
   } catch (e) {
-    console.error('List forms error:', e);
     res.status(500).json({ error: 'Failed to load forms' });
   }
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, validateForm, async (req, res) => {
   try {
-    const user = await User.findOne({ airtableUserId: req.userId });
-    if (!user) return res.status(401).json({ error: 'Not logged in' });
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(401).json({ error: 'User not found' });
 
     const { title, questions } = req.body;
 
-    if (!title || !Array.isArray(questions) || questions.length === 0) {
-      return res.status(400).json({ error: 'Title and questions are required' });
-    }
-
     const form = await Form.create({
-      ownerUserId: user.airtableUserId,
-      airtableBaseId: process.env.AIRTABLE_BASE_ID,
-      airtableTableName: process.env.AIRTABLE_TABLE_NAME,
+      ownerId: user._id,
+      airtableBaseId: user.airtableBaseId || process.env.AIRTABLE_BASE_ID,
+      airtableTableName: user.airtableTableName || process.env.AIRTABLE_TABLE_NAME,
       title,
       questions,
     });
 
     res.status(201).json({ formId: form._id });
   } catch (e) {
-    console.error('Failed to save form:', e);
     res.status(500).json({ error: 'Failed to save form' });
   }
 });
@@ -60,40 +67,22 @@ router.get('/:id', async (req, res) => {
       questions: form.questions,
     });
   } catch (e) {
-    console.error('Error loading form:', e);
     res.status(500).json({ error: 'Failed to load form' });
   }
 });
 
-router.post('/:id/submit', auth, async (req, res) => {
+router.post('/:id/submit', submissionLimiter, validateSubmission, async (req, res) => {
   try {
-   
     const form = await Form.findById(req.params.id);
-    if (!form) {
-      return res.status(404).json({ error: 'Form not found' });
-    }
-
-
-    const user = await User.findOne({ airtableUserId: req.userId });
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-    const token = user.accessToken;
+    if (!form) return res.status(404).json({ error: 'Form not found' });
 
     const { answers } = req.body;
-    if (!answers || typeof answers !== 'object') {
-      return res.status(400).json({ error: 'answers object is required' });
-    }
-
-    const missing = [];
-    for (const q of form.questions) {
-      if (q.required && (answers[q.fieldId] == null || answers[q.fieldId] === '')) {
-        missing.push(q.fieldId);
-      }
-    }
-    if (missing.length) {
-      return res.status(400).json({ error: 'Missing required fields', missing });
-    }
+    
+    const localResponse = await Response.create({
+      formId: form._id,
+      answers,
+      syncStatus: 'pending'
+    });
 
     const airtableFields = {};
     form.questions.forEach(q => {
@@ -102,40 +91,76 @@ router.post('/:id/submit', auth, async (req, res) => {
       }
     });
 
-    const airtableResponse = await fetch(
-      `https://api.airtable.com/v0/${form.airtableBaseId}/${form.airtableTableName}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ fields: airtableFields })
-      }
-    );
+    if (form.airtableBaseId && form.airtableTableName) {
+      try {
+        const user = await User.findById(form.ownerId);
+        if (user && user.accessToken) {
+          const airtableResponse = await fetch(
+            `https://api.airtable.com/v0/${form.airtableBaseId}/${form.airtableTableName}`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${user.accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ fields: airtableFields })
+            }
+          );
 
-    if (!airtableResponse.ok) {
-      const errorData = await airtableResponse.json();
-      return res.status(400).json({ error: 'Failed to save to Airtable', details: errorData });
+          const airtableData = await airtableResponse.json();
+
+          if (airtableResponse.ok) {
+            localResponse.airtableRecordId = airtableData.id;
+            localResponse.syncStatus = 'success';
+          } else {
+            localResponse.syncStatus = 'failed';
+            localResponse.syncError = airtableData.error?.message || 'Airtable API error';
+          }
+        }
+      } catch (syncErr) {
+        localResponse.syncStatus = 'failed';
+        localResponse.syncError = syncErr.message;
+      }
     }
 
-    const airtableRecord = await airtableResponse.json();
-
-    const saved = await Response.create({
-      formId: form._id,
-      airtableRecordId: airtableRecord.id,
-      answers,
-      createdAt: new Date()
-    });
+    await localResponse.save();
 
     res.status(201).json({
       success: true,
-      responseId: saved._id,
-      airtableRecordId: airtableRecord.id
+      responseId: localResponse._id,
+      syncStatus: localResponse.syncStatus
     });
   } catch (e) {
-    console.error('Submit error:', e);
     res.status(500).json({ error: 'Failed to submit response' });
+  }
+});
+
+router.put('/:id', auth, validateForm, async (req, res) => {
+  try {
+    const { title, questions } = req.body;
+    const form = await Form.findOneAndUpdate(
+      { _id: req.params.id, ownerId: req.userId },
+      { title, questions },
+      { new: true }
+    );
+
+    if (!form) return res.status(403).json({ error: 'Form not found or access denied' });
+    res.json({ success: true, formId: form._id });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update form' });
+  }
+});
+
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const form = await Form.findOneAndDelete({ _id: req.params.id, ownerId: req.userId });
+    if (!form) return res.status(403).json({ error: 'Form not found or access denied' });
+    
+    await Response.deleteMany({ formId: req.params.id });
+    
+    res.json({ success: true, message: 'Form and responses deleted' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete form' });
   }
 });
 
