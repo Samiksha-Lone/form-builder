@@ -11,8 +11,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@huggingface/inference": "^2.6.4",
     "airtable": "^0.12.2",
     "axios": "^1.13.2",
+    "compromise": "^14.10.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -22,6 +24,7 @@
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
+    "natural": "^6.7.0",
     "node-fetch": "^2.7.0"
   }
 }

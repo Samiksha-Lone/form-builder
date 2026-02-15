@@ -8,6 +8,13 @@ const Response = require('../models/response.model');
 const fetch = require('node-fetch');
 const rateLimit = require('express-rate-limit');
 const { validateForm, validateSubmission } = require('../middlewares/validation.middleware');
+const {
+  analyzeSentiment,
+  extractKeyPhrases,
+  detectSpam,
+  calculateQualityScore,
+  generateFormFromPrompt
+} = require('../utils/aiAnalysis.utils');
 
 const submissionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, 
@@ -56,6 +63,18 @@ router.post('/', auth, validateForm, async (req, res) => {
   }
 });
 
+router.post('/generate', auth, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+    const generatedForm = await generateFormFromPrompt(prompt);
+    res.json(generatedForm);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to generate form: ' + e.message });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const form = await Form.findById(req.params.id);
@@ -83,6 +102,50 @@ router.post('/:id/submit', submissionLimiter, validateSubmission, async (req, re
       answers,
       syncStatus: 'pending'
     });
+
+    // AI Analysis (runs asynchronously to not block response)
+    if (process.env.ENABLE_AI_FEATURES === 'true') {
+      // Extract text responses for analysis
+      const textResponses = form.questions
+        .filter(q => ['shortText', 'longText'].includes(q.type))
+        .map(q => answers[q.fieldId])
+        .filter(a => a);
+
+      // Run AI analysis in background
+      (async () => {
+        try {
+          // Sentiment Analysis
+          if (textResponses.length > 0) {
+            const sentiment = await analyzeSentiment(textResponses);
+            if (sentiment) {
+              localResponse.sentiment = sentiment;
+            }
+
+            // Extract Key Phrases
+            const keyPhrases = extractKeyPhrases(textResponses);
+            if (keyPhrases.length > 0) {
+              localResponse.keyPhrases = keyPhrases;
+            }
+          }
+
+          // Spam Detection
+          if (process.env.SPAM_DETECTION_ENABLED === 'true') {
+            const spamResult = detectSpam(answers, form);
+            localResponse.spamScore = spamResult.spamScore;
+            localResponse.isSpam = spamResult.isSpam;
+          }
+
+          // Quality Scoring
+          const qualityScore = calculateQualityScore(answers, form);
+          localResponse.qualityScore = qualityScore;
+
+          await localResponse.save();
+        } catch (aiError) {
+          console.error('AI Analysis Error:', aiError.message);
+          // Continue even if AI analysis fails
+        }
+      })();
+    }
 
     const airtableFields = {};
     form.questions.forEach(q => {

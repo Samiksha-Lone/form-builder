@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, LogOut, FileText, BarChart3, ExternalLink, Copy, Check, Edit2, Trash2 } from 'lucide-react';
+import { Plus, LogOut, FileText, BarChart3, ExternalLink, Copy, Check, Edit2, Trash2, Sparkles, Lightbulb } from 'lucide-react';
 import { API_BASE_URL } from './config';
 import { apiCall } from './utils/api';
 import LoadingSpinner from './components/LoadingSpinner';
+import AITemplateModal from './components/AITemplateModal';
 
 const Dashboard = () => {
   const [copiedId, setCopiedId] = useState(null);
@@ -20,6 +21,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [formTitle, setFormTitle] = useState('My New Form');
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const navigate = useNavigate();
 
@@ -206,6 +211,52 @@ useEffect(() => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleSelectTemplate = (templateId) => {
+    setIsTemplateModalOpen(false);
+    apiCall(`/api/templates/${templateId}`).then(data => {
+      setEditingId(null);
+      setFormTitle(data.title);
+      setBuilder(data.questions.map((q, idx) => ({
+        id: 'q' + Date.now() + idx,
+        label: q.label,
+        type: q.type,
+        required: q.required,
+        enabled: true,
+        options: q.options || []
+      })));
+      setSaveMessage('AI Template loaded! Don\'t forget to customize it.');
+    });
+  };
+
+  const handleGenerateAiForm = async () => {
+    if (!aiPrompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const data = await apiCall('/api/forms/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+      
+      setEditingId(null);
+      setFormTitle(data.title);
+      setBuilder(data.questions.map((q, idx) => ({
+        id: 'q' + Date.now() + idx,
+        label: q.label,
+        type: q.type,
+        required: q.required,
+        enabled: true,
+        options: q.options || []
+      })));
+      setAiPrompt('');
+      setSaveMessage('AI has generated a form for you!');
+    } catch (err) {
+      alert('AI Generation failed: ' + err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <LoadingSpinner size={40} />
@@ -267,6 +318,24 @@ useEffect(() => {
                 </p>
               </div>
               <div className="flex gap-2">
+                <button
+                  onClick={() => setIsTemplateModalOpen(true)}
+                  className="p-2.5 bg-sky-50 text-sky-600 border border-sky-100 rounded-xl hover:bg-sky-100 flex items-center gap-2 font-bold text-xs"
+                  title="AI Templates"
+                >
+                  <Sparkles size={16} />
+                  <span className="hidden sm:inline">AI TEMPLATES</span>
+                </button>
+                {editingId && (
+                  <button
+                    onClick={() => navigate(`/forms/${editingId}/responses`)}
+                    className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-100 flex items-center gap-2 font-bold text-xs"
+                    title="AI Insights"
+                  >
+                    <Lightbulb size={16} />
+                    <span className="hidden sm:inline">AI INSIGHTS</span>
+                  </button>
+                )}
                 {editingId && (
                   <button
                     onClick={resetToNewForm}
@@ -285,6 +354,33 @@ useEffect(() => {
                 </button>
               </div>
             </div>
+
+            {/* AI Generation Input */}
+            {!editingId && (
+              <div className="mb-6 p-4 bg-sky-50/30 border border-sky-100/50 rounded-2xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-sky-500" />
+                  <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest">AI Builder</span>
+                </div>
+                <div className="flex gap-2">
+                  <input 
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g., 'A feedback form for my coffee shop'"
+                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                  />
+                  <button
+                    onClick={handleGenerateAiForm}
+                    disabled={isGenerating || !aiPrompt.trim()}
+                    className="p-2.5 bg-sky-600 text-white rounded-xl hover:bg-sky-700 disabled:opacity-50 transition-all font-bold text-xs flex items-center gap-2"
+                  >
+                    {isGenerating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Sparkles size={14} />}
+                    GENERATE
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               {builder.map(field => (
@@ -369,9 +465,11 @@ useEffect(() => {
               <p className={`mt-3 p-4 rounded-xl text-sm font-bold flex items-center gap-2 ${
                 saveMessage.includes('saved') || saveMessage.includes('updated') 
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
+                  : saveMessage.includes('loaded') || saveMessage.includes('AI')
+                  ? 'bg-sky-50 text-sky-700 border border-sky-100'
                   : 'bg-red-50 text-red-700 border border-red-100'
               }`}>
-                <Check size={16} />
+                {saveMessage.includes('loaded') || saveMessage.includes('AI') ? <Sparkles size={16} /> : <Check size={16} />}
                 {saveMessage}
               </p>
             )}
@@ -442,10 +540,11 @@ useEffect(() => {
                           </button>
                           <button 
                             onClick={() => navigate(`/forms/${form.id}/responses`)}
-                            className="p-2 bg-white text-slate-600 border border-slate-200 rounded-lg hover:text-emerald-600 hover:border-emerald-600 transition-all shadow-sm"
-                            title="View Data"
+                            className="p-2 bg-white text-slate-600 border border-slate-200 rounded-lg hover:text-sky-600 hover:border-sky-600 transition-all shadow-sm flex items-center gap-1 group/btn"
+                            title="AI Insights"
                           >
-                            <BarChart3 size={18} />
+                            <Sparkles size={18} className="text-sky-500 group-hover/btn:scale-110 transition-transform" />
+                            <span className="text-[10px] font-black hidden lg:inline">INSIGHTS</span>
                           </button>
                           <button 
                             onClick={() => handleDeleteForm(form.id)}
@@ -464,6 +563,12 @@ useEffect(() => {
           </motion.div>
         </div>
 
+        <AITemplateModal 
+          isOpen={isTemplateModalOpen} 
+          onClose={() => setIsTemplateModalOpen(false)} 
+          onSelect={handleSelectTemplate}
+          token={localStorage.getItem('jwtToken')}
+        />
       </motion.div>
     </div>
   );

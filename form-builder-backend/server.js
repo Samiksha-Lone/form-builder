@@ -9,6 +9,7 @@ const authRoutes = require('./src/routes/auth.routes');
 const formRoutes = require('./src/routes/form.routes');
 const airtableRoutes = require('./src/routes/airtable.routes');
 const responseRoutes = require('./src/routes/response.routes');
+const analyticsRoutes = require('./src/routes/analytics.routes');
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/auth', authRoutes);
 app.use('/api', airtableRoutes); 
 app.use('/api/forms', formRoutes); 
 app.use('/api/forms', responseRoutes);
+app.use('/api', analyticsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Form Builder API is running' });
