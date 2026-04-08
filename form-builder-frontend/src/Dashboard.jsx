@@ -22,7 +22,6 @@ const Dashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [formTitle, setFormTitle] = useState('My New Form');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
