@@ -2,70 +2,41 @@
 
 An AI-powered form builder with dynamic logic, OAuth authentication, Airtable integration, and advanced analytics like sentiment analysis, spam detection, and response insights.
 
-## 📋 Problem Statement
+## Links
+
+- [GitHub Repository](https://github.com/Samiksha-Lone/form-builder)
+
+## Problem Statement
 
 Businesses and individuals need an easy way to create dynamic forms, collect responses, and analyze data without coding expertise. Traditional form builders lack advanced analytics, conditional logic, and secure integrations.
 
-## 🛠️ Problem–Solution Mapping
+## Problem–Solution Mapping
 
-| Problem | Solution |
-|---------|----------|
-| Static form structures limit user experience | Dynamic conditional logic for show/hide fields based on user input |
-| Manual data analysis is time-consuming | AI-powered sentiment analysis, spam detection, and quality scoring |
-| Lack of integration with external tools | Seamless Airtable integration with OAuth authentication |
-| Security concerns with form submissions | Multi-provider OAuth (Airtable & Google) with JWT session management |
-| No insights into response patterns | Comprehensive analytics dashboard with timelines and key phrase extraction |
+To address static form structures, we implement dynamic conditional logic for adaptive field display. For efficient data analysis, AI-powered sentiment analysis, spam detection, and quality scoring are integrated. Seamless Airtable integration with OAuth authentication resolves integration issues, while multi-provider OAuth with JWT ensures security. Comprehensive analytics provide insights into response patterns.
 
-## 🔍 What is Implemented
+## System Architecture
 
-Full-stack form builder with React frontend, Node.js backend, MongoDB database. Features include OAuth authentication, dynamic forms with conditional logic, AI-powered analytics (sentiment, spam detection, quality scoring), and Airtable integration.
-
-## 🏗️ Solution Overview
-
-The solution consists of a modern web application architecture:
-
-- **Frontend**: Single-page application built with React 19, providing an intuitive dashboard for form creation and management
-- **Backend**: RESTful API server handling authentication, form operations, and AI analytics
+- **Frontend**: React-based single-page application for form creation and management
+- **Backend**: Node.js RESTful API server for authentication, form operations, and AI analytics
 - **Database**: MongoDB for storing users, forms, and responses
-- **AI Integration**: Hugging Face models for natural language processing tasks
-- **External Integrations**: Airtable API for data synchronization and OAuth flows
+- **Authentication**: OAuth 2.0 with JWT for secure sessions
+- **AI Integration**: Hugging Face models for NLP tasks
+- **External Integrations**: Airtable API for data synchronization
 
-The application follows a microservices-like structure with clear separation of concerns across controllers, models, and utilities.
+## Features
 
-## 🌟 Project Highlights
+- Multi-provider OAuth authentication (Airtable and Google)
+- Dynamic form builder with conditional logic
+- Response collection and management
+- Airtable integration with OAuth
+- AI-powered form generation from natural language
+- Form templates
+- Sentiment analysis, spam detection, and quality scoring
+- Key phrase extraction and smart suggestions
+- Analytics dashboard with timelines
+- Responsive design
 
-- **AI-First Approach**: Leverages free AI models for advanced features like form generation from natural language prompts
-- **Secure Authentication**: Implements OAuth 2.0 flows with PKCE for Airtable and standard OAuth for Google
-- **Scalable Architecture**: Modular backend with middleware for validation, rate limiting, and error handling
-- **Modern UI/UX**: Responsive design with smooth animations and mobile-first approach
-- **Comprehensive Analytics**: Multi-dimensional analysis including sentiment, quality, and temporal patterns
-
-## ✨ Features
-
-- 🔐 **Multi-Provider Authentication**: Secure login via Airtable OAuth (PKCE) and Google OAuth
-- 📝 **Dynamic Form Builder**: Create forms with text, long text, and single-select field types
-- 🎯 **Conditional Logic**: Advanced visibility rules with AND/OR conditions for dynamic field display
-- 📊 **Response Management**: Collect, store, and export form responses with rate limiting
-- 🔗 **Airtable Integration**: Browse bases, sync data, and manage OAuth tokens
-- 🤖 **AI Form Generation**: Generate complete forms from natural language descriptions
-- 📋 **Form Templates**: Access pre-built templates for common use cases
-- 😊 **Sentiment Analysis**: Detect positive, negative, and neutral feedback trends
-- 🚫 **Spam Detection**: Identify and flag suspicious responses
-- ⭐ **Quality Scoring**: Rate response completeness and detail
-- 🔑 **Key Phrase Extraction**: Discover themes and top keywords from responses
-- 💡 **Smart Suggestions**: Real-time recommendations for form structure improvements
-- 📈 **Analytics Dashboard**: Comprehensive insights with timelines and discoverability
-- 📱 **Responsive Design**: Mobile-friendly interface with Tailwind CSS and Framer Motion
-
-## 📸 Screenshots
-
-![Dashboard Overview](outputs/dashboard.webp)
-
-![Form Builder](outputs/form.webp)
-
-![Analytics Dashboard](outputs/analysis.webp)
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: React, Vite, Tailwind CSS
 - **Backend**: Node.js, Express.js
@@ -73,7 +44,7 @@ The application follows a microservices-like structure with clear separation of 
 - **Authentication**: JWT + OAuth
 - **AI**: Hugging Face Inference
 
-## 🚀 Installation / Setup Steps
+## Installation / Setup
 
 ### Prerequisites
 - Node.js (v18 or higher)
@@ -133,29 +104,22 @@ npm run build
 npm run preview
 ```
 
-## 📚 Key Learnings
+## Screenshots
 
-- **OAuth Implementation**: Deep understanding of OAuth 2.0 flows, PKCE, and secure token management
-- **AI Integration**: Practical experience with Hugging Face models and NLP processing pipelines
-- **Full-Stack Architecture**: Designing scalable APIs with proper separation of concerns
-- **Modern React Patterns**: Leveraging React 19 features, hooks, and concurrent rendering
-- **Database Design**: MongoDB schema design for forms, responses, and user management
-- **Security Best Practices**: Implementing rate limiting, input validation, and secure authentication
-- **UI/UX Design**: Creating responsive, accessible interfaces with modern CSS frameworks
+![Dashboard Overview](outputs/dashboard.webp)
 
-## 🔮 Future Improvements
+![Form Builder](outputs/form.webp)
 
-- **Advanced Field Types**: Support for file uploads, multi-select, date/time, and rating fields
-- **Workflow Automation**: Integration with Zapier or similar for automated actions on form submissions
-- **Real-time Collaboration**: Multi-user editing with live cursors and conflict resolution
-- **Advanced Analytics**: Predictive analytics and A/B testing for form optimization
-- **Mobile App**: Native mobile applications for iOS and Android
-- **Multi-language Support**: Internationalization with support for multiple languages
-- **API Rate Limiting**: More granular rate limiting based on user tiers
-- **Backup & Recovery**: Automated database backups and disaster recovery procedures
+![Analytics Dashboard](outputs/analysis.webp)
 
-## 📬 Contact
+## License
 
-**Samiksha Balaji Lone**  
-📧 samikshalone2@gmail.com  
-🔗 [LinkedIn](https://linkedin.com/in/samiksha-lone) | [Portfolio](https://samiksha-lone.vercel.app/)
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Credit
+
+If you use or build upon this project, please provide attribution:
+
+Samiksha Lone
+
+https://github.com/Samiksha-Lone
