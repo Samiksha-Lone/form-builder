@@ -1,125 +1,133 @@
-# Form Builder
+# FormCraft AI — Smart Form Builder with Airtable Integration
 
-An AI-powered form builder with dynamic logic, OAuth authentication, Airtable integration, and advanced analytics like sentiment analysis, spam detection, and response insights.
+> A modern, AI-powered form building platform that seamlessly connects your responses to Airtable while providing deep insights through sentiment analysis.
 
-## Links
+## 🔗 Links
+- **GitHub Repository**: [https://github.com/Samiksha-Lone/form-builder](https://github.com/Samiksha-Lone/form-builder)
 
-- [GitHub Repository](https://github.com/Samiksha-Lone/form-builder)
+## Overview
+
+FormCraft AI is a sophisticated form management system designed for businesses and creators who need more than just a static data collection tool. It combines the power of AI to generate templates and analyze responses with the flexibility of Airtable for data management and storage.
 
 ## Problem Statement
 
-Businesses and individuals need an easy way to create dynamic forms, collect responses, and analyze data without coding expertise. Traditional form builders lack advanced analytics, conditional logic, and secure integrations.
+- **Tedious Form Creation**: Manual form design is time-consuming and often lacks professional structure.
+- **Drowning in Data**: High-volume form responses are hard to analyze without manual effort to identify trends or spam.
+- **Syncing Issues**: Moving data from forms to external tools like Airtable often requires brittle third-party connectors or manual exports.
 
-## Problem–Solution Mapping
+## Solution
 
-To address static form structures, we implement dynamic conditional logic for adaptive field display. For efficient data analysis, AI-powered sentiment analysis, spam detection, and quality scoring are integrated. Seamless Airtable integration with OAuth authentication resolves integration issues, while multi-provider OAuth with JWT ensures security. Comprehensive analytics provide insights into response patterns.
+FormCraft AI automates the entire lifecycle of a form. Using Hugging Face AI, it can generate entire form structures from a single prompt and analyze respondent sentiment in real-time. It features native, secure OAuth integration with Airtable to ensure your data is always synced directly to your preferred workspace.
 
-## System Architecture
+## Key Features
 
-- **Frontend**: React-based single-page application for form creation and management
-- **Backend**: Node.js RESTful API server for authentication, form operations, and AI analytics
-- **Database**: MongoDB for storing users, forms, and responses
-- **Authentication**: OAuth 2.0 with JWT for secure sessions
-- **AI Integration**: Hugging Face models for NLP tasks
-- **External Integrations**: Airtable API for data synchronization
-
-## Features
-
-- Multi-provider OAuth authentication (Airtable and Google)
-- Dynamic form builder with conditional logic
-- Response collection and management
-- Airtable integration with OAuth
-- AI-powered form generation from natural language
-- Form templates
-- Sentiment analysis, spam detection, and quality scoring
-- Key phrase extraction and smart suggestions
-- Analytics dashboard with timelines
-- Responsive design
+- 🔐 **Dual OAuth Authentication** — Secure, specialized access via Google or Airtable OAuth 2.0
+- 🤖 **AI-Powered Builder** — Generate professional form structures instantly from a simple text prompt
+- 🔌 **Native Airtable Sync** — Direct, real-time mapping of form responses to your Airtable bases and tables
+- 📊 **Smart Analytics Dashboard** — Visual representation of response trends, timelines, and sentiment data
+- 🛡️ **AI Spam & Sentiment Detection** — Automatic analysis of response content to flag spam and categorize sentiment
+- 🧩 **Dynamic Form Viewer** — A sleek, mobile-optimized interface for users to submit responses securely
+- ⚙️ **Advanced Form Management** — Full CRUD capabilities with support for conditional logic and custom field types
+- 📱 **Responsive UI** — Premium, mobile-first design built with modern glassmorphic aesthetics
 
 ## Tech Stack
 
-- **Frontend**: React, Vite, Tailwind CSS
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB
-- **Authentication**: JWT + OAuth
-- **AI**: Hugging Face Inference
+| Layer | Technology |
+|---|---|
+| **Frontend** | React.js, Vite, Tailwind CSS, Framer Motion, Recharts |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB (Mongoose) |
+| **AI Layer** | Hugging Face Inference API |
+| **Auth & Security** | JWT, Google OAuth, Airtable OAuth, bcryptjs |
+| **Icons** | Lucide React |
+| **Deployment** | Vercel (frontend), Render (backend) |
 
-## Installation / Setup
+## Architecture / Flow
+
+```text
+User → React Frontend → Axios → Express API → MongoDB
+                                      ↓
+                           JWT Auth · AI Analysis
+                           Airtable Sync · OAuth
+```
+
+## My Contribution
+
+**I independently designed and built this entire project from scratch**, including:
+
+- 🖥️ **Frontend Architecture** — Developed a modular React application with complex state management for the form builder and analytics suite
+- ⚙️ **Backend Engineering** — Built a robust Express server handling complex OAuth 2.0 flows and direct Airtable API integrations
+- 🤖 **AI Implementation** — Architected the NLP pipeline using Hugging Face for real-time sentiment analysis and form generation
+- 🔌 **Integration Design** — Engineered the sync engine that maps dynamic form schemas to Airtable's relational structure
+- 🚀 **Deployment & DevOps** — Configured the full-stack environment, managed database clusters, and ensured secure communication between services
+
+## Setup
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB instance (local or cloud)
-- Airtable account with API access
-- Google OAuth credentials
-- Hugging Face API token (optional, for AI features)
+Node.js 18+, npm, MongoDB account, Airtable Developer account, Google Cloud Console project
 
-### Backend Setup
+### 1. Backend
 
-1. **Clone and navigate to backend directory:**
-   ```bash
-   cd form-builder-backend
-   npm install
-   ```
+```bash
+cd form-builder-backend
+npm install
+```
 
-2. **Create environment file:**
-   Create `.env` file with the following variables:
-   ```env
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/form-builder
-   JWT_SECRET=your-secure-jwt-secret
-   AIRTABLE_CLIENT_ID=your-airtable-client-id
-   AIRTABLE_CLIENT_SECRET=your-airtable-client-secret
-   AIRTABLE_BASE_ID=your-airtable-base-id
-   AIRTABLE_TABLE_NAME=your-table-name
-   GOOGLE_CLIENT_ID=your-google-client-id
-   GOOGLE_CLIENT_SECRET=your-google-client-secret
-   HUGGINGFACE_API_KEY=your-huggingface-token
-   ```
+Create a `.env` file:
 
-3. **Start the backend server:**
-   ```bash
-   node server.js
-   ```
-   Server runs on `http://localhost:5000`
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+AIRTABLE_CLIENT_ID=your_airtable_client_id
+AIRTABLE_CLIENT_SECRET=your_airtable_client_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+HUGGINGFACE_API_KEY=your_huggingface_key
+```
 
-### Frontend Setup
+```bash
+node server.js   # http://localhost:5000
+```
 
-1. **Navigate to frontend directory:**
-   ```bash
-   cd ../form-builder-frontend
-   npm install
-   ```
-
-2. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-   Application available at `http://localhost:5173`
-
-### Production Build
+### 2. Frontend
 
 ```bash
 cd form-builder-frontend
-npm run build
-npm run preview
+npm install
+```
+
+Create a `.env` file:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+```bash
+npm run dev   # http://localhost:5173
 ```
 
 ## Screenshots
 
-![Dashboard Overview](outputs/dashboard.webp)
+### Dashboard
+![Dashboard](outputs/dashboard.webp)
 
+### Form Builder & AI Generation
 ![Form Builder](outputs/form.webp)
 
-![Analytics Dashboard](outputs/analysis.webp)
+### AI Insights & Analytics
+![AI Insights](outputs/analysis.webp)
+
+## Future Improvements
+
+- [ ] Multi-page form support for complex surveys
+- [ ] Drag-and-drop builder interface for visual customization
+- [ ] Integration with Slack/Discord for real-time submission alerts
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+ISC License — see [LICENSE](LICENSE) for details.
 
-## Credit
+## Credits
 
-If you use or build upon this project, please provide attribution:
-
-Samiksha Lone
-
-https://github.com/Samiksha-Lone
+**Developed by [Samiksha Lone](https://github.com/Samiksha-Lone)**

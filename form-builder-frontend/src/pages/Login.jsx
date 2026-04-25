@@ -23,7 +23,7 @@ const LoginPage = () => {
             onClick={handleAirtableLogin}
             className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-3 shadow-lg shadow-slate-200"
           >
-            <img src="https://www.vectorlogo.zone/logos/airtable/airtable-icon.svg" className="w-5 h-5" alt="Airtable" />
+            <img src="/airtable.svg" className="w-5 h-5" alt="Airtable" />
             Connect with Airtable
           </button>
           
@@ -36,7 +36,7 @@ const LoginPage = () => {
             onClick={handleGoogleLogin}
             className="w-full py-4 rounded-xl bg-white text-slate-700 font-bold border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
           >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+            <img src="/google.svg" className="w-5 h-5" alt="Google" />
             Sign in with Google
           </button>
         </div>

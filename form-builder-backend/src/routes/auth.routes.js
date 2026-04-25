@@ -110,7 +110,7 @@ router.get('/google/callback', async (req, res) => {
     const payload = ticket.getPayload();
 
     const user = await User.findOneAndUpdate(
-      { email: payload.email },
+      { $or: [{ googleId: payload.sub }, { email: payload.email }] },
       {
         googleId: payload.sub,
         name: payload.name,
@@ -123,6 +123,7 @@ router.get('/google/callback', async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.redirect(`http://localhost:5173/dashboard?token=${token}`);
   } catch (err) {
+    console.error('Google Auth Error:', err);
     res.redirect('http://localhost:5173/login?error=auth_failed');
   }
 });
